@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Matrix
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -21,6 +22,7 @@ import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.video.AudioConfig
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -42,10 +44,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,6 +60,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hgm.cameraxguide.ui.theme.CameraXGuideTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -106,6 +112,8 @@ class MainActivity : ComponentActivity() {
                         }
                         val viewModel = viewModel<MainViewModel>()
                         val bitmaps by viewModel.bitmaps.collectAsState()
+
+                        var photoTaken by remember { mutableStateOf(false) }
 
                         BottomSheetScaffold(
                               scaffoldState = scaffoldState,
@@ -170,6 +178,7 @@ class MainActivity : ComponentActivity() {
                                                             controller = controller,
                                                             onPhotoTaken = viewModel::onTakePhoto
                                                       )
+                                                      photoTaken = true
                                                 },
                                           ) {
                                                 Icon(
@@ -179,17 +188,23 @@ class MainActivity : ComponentActivity() {
                                                 )
                                           }
 
-                                          //IconButton(
-                                          //      onClick = {
-                                          //            recordVideo(controller)
-                                          //      },
-                                          //) {
-                                          //      Icon(
-                                          //            imageVector = Icons.Default.Videocam,
-                                          //            contentDescription = null,
-                                          //            tint = Color.White
-                                          //      )
-                                          //}
+                                          IconButton(
+                                                onClick = {
+                                                      recordVideo(controller)
+                                                },
+                                          ) {
+                                                Icon(
+                                                      imageVector = Icons.Default.Videocam,
+                                                      contentDescription = null,
+                                                      tint = Color.White
+                                                )
+                                          }
+                                    }
+                              }
+
+                              if (photoTaken) {
+                                    FlashEffect{
+                                          photoTaken=false
                                     }
                               }
                         }
@@ -293,4 +308,24 @@ class MainActivity : ComponentActivity() {
                   }
             }
       }
+}
+
+
+@Composable
+fun FlashEffect(
+      onFlashFinish:()->Unit
+) {
+      var flashEffect by remember { mutableStateOf(true) }
+
+      LaunchedEffect(Unit) {
+            delay(100)
+            flashEffect = false
+            onFlashFinish()
+      }
+
+      Box(
+            modifier = Modifier
+                  .fillMaxSize()
+                  .background(if (flashEffect) Color.White else Color.Transparent)
+      )
 }
