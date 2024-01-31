@@ -59,7 +59,7 @@ fun CameraXGuideTheme(
       if (!view.isInEditMode) {
             SideEffect {
                   val window = (view.context as Activity).window
-                  window.statusBarColor = colorScheme.primary.toArgb()
+                  window.statusBarColor = Green.toArgb()
                   WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars =
                         darkTheme
             }
